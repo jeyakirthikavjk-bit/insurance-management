@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>InsureSystem - Insurance Policy Management</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+<nav class="navbar">
+    <div class="nav-brand">
+        <i class="fas fa-shield-alt"></i>
+        <span>InsureSystem</span>
+    </div>
+    <ul class="nav-links">
+        <li><a th:href="@{/dashboard}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+        <li><a th:href="@{/customers}"><i class="fas fa-users"></i> Customers</a></li>
+        <li><a th:href="@{/policies}"><i class="fas fa-file-contract"></i> Policies</a></li>
+        <li><a th:href="@{/claims}"><i class="fas fa-hand-holding-usd"></i> Claims</a></li>
+        <li><a th:href="@{/payments}"><i class="fas fa-credit-card"></i> Payments</a></li>
+        <li><a th:href="@{/agents}"><i class="fas fa-user-tie"></i> Agents</a></li>
+        <li><a th:href="@{/documents}"><i class="fas fa-folder-open"></i> Documents</a></li>
+        <li><a th:href="@{/reports}"><i class="fas fa-chart-bar"></i> Reports</a></li>
+    </ul>
+    <div class="nav-user">
+        <i class="fas fa-user-circle"></i>
+        <span>Admin</span>
+    </div>
+</nav>
+
+<section class="hero">
+    <div class="hero-content">
+        <h1>Insurance Policy<br/><span>Management System</span></h1>
+        <p>A comprehensive platform to manage customers, policies, claims, payments, and agents — all in one place.</p>
+        <div class="hero-buttons">
+            <a th:href="@{/dashboard}" class="hero-btn primary"><i class="fas fa-tachometer-alt"></i> Go to Dashboard</a>
+            <a th:href="@{/customers}" class="hero-btn outline"><i class="fas fa-users"></i> Manage Customers</a>
+        </div>
+    </div>
+</section>
+
+<section class="features-section">
+    <h2 class="section-title">Everything You Need</h2>
+    <p class="section-subtitle">A complete insurance management solution built with Spring Boot & H2</p>
+    <div class="features-grid">
+        <div class="feature-card">
+            <i class="fas fa-users"></i>
+            <h3>Customer Management</h3>
+            <p>Add, update, search and track all customer information and history.</p>
+        </div>
+        <div class="feature-card">
+            <i class="fas fa-file-contract"></i>
+            <h3>Policy Management</h3>
+            <p>Create Life, Health and Vehicle policies with automatic premium calculation.</p>
+        </div>
+        <div class="feature-card">
+            <i class="fas fa-hand-holding-usd"></i>
+            <h3>Claims Processing</h3>
+            <p>File, review, approve or reject insurance claims efficiently.</p>
+        </div>
+        <div class="feature-card">
+            <i class="fas fa-credit-card"></i>
+            <h3>Payment Tracking</h3>
+            <p>Record premium payments and track payment history by policy or customer.</p>
+        </div>
+        <div class="feature-card">
+            <i class="fas fa-user-tie"></i>
+            <h3>Agent Management</h3>
+            <p>Manage agents, track commissions, and link them to customers and policies.</p>
+        </div>
+        <div class="feature-card">
+            <i class="fas fa-folder-open"></i>
+            <h3>Document Upload</h3>
+            <p>Upload, store, and download policy documents, ID proofs, and claim files.</p>
+        </div>
+        <div class="feature-card">
+            <i class="fas fa-chart-bar"></i>
+            <h3>Reports & Analytics</h3>
+            <p>Get insights into revenue, claims, and policy performance at a glance.</p>
+        </div>
+        <div class="feature-card">
+            <i class="fas fa-shield-alt"></i>
+            <h3>OOP Architecture</h3>
+            <p>Built with inheritance, polymorphism, abstraction and encapsulation principles.</p>
+        </div>
+    </div>
+</section>
+
+<footer style="background: var(--primary); color: rgba(255,255,255,0.7); text-align:center; padding: 1.5rem;">
+    <p>Insurance Policy Management System &copy; 2024 | Built with Spring Boot, JPA & H2</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,15 @@
+package com.insurance.repository;
+
+import com.insurance.entity.Document;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import java.util.List;
+
+@Repository
+public interface DocumentRepository extends JpaRepository<Document, Long> {
+    List<Document> findByCustomerId(Long customerId);
+    List<Document> findByPolicyId(Long policyId);
+    List<Document> findByClaimId(Long claimId);
+    List<Document> findByDocumentType(Document.DocumentType documentType);
+    List<Document> findByStatus(Document.DocumentStatus status);
+}

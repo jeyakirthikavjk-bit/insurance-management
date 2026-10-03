@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Reports - InsureSystem</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<nav class="navbar">
+    <div class="nav-brand"><i class="fas fa-shield-alt"></i><span>InsureSystem</span></div>
+    <ul class="nav-links">
+        <li><a th:href="@{/dashboard}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+        <li><a th:href="@{/customers}"><i class="fas fa-users"></i> Customers</a></li>
+        <li><a th:href="@{/policies}"><i class="fas fa-file-contract"></i> Policies</a></li>
+        <li><a th:href="@{/claims}"><i class="fas fa-hand-holding-usd"></i> Claims</a></li>
+        <li><a th:href="@{/payments}"><i class="fas fa-credit-card"></i> Payments</a></li>
+        <li><a th:href="@{/agents}"><i class="fas fa-user-tie"></i> Agents</a></li>
+        <li><a th:href="@{/documents}"><i class="fas fa-folder-open"></i> Documents</a></li>
+        <li><a th:href="@{/reports}" class="active"><i class="fas fa-chart-bar"></i> Reports</a></li>
+    </ul>
+    <div class="nav-user"><i class="fas fa-user-circle"></i><span>Admin</span></div>
+</nav>
+
+<div class="main-content">
+    <div class="page-header">
+        <div class="page-title"><i class="fas fa-chart-bar" style="color:var(--secondary)"></i> Reports &amp; <span>Analytics</span></div>
+        <button class="btn btn-primary" onclick="window.print()"><i class="fas fa-print"></i> Print Report</button>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon blue"><i class="fas fa-users"></i></div>
+            <div class="stat-info"><h4>Total Customers</h4>
+                <div class="stat-value" th:text="${totalCustomers}">0</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green"><i class="fas fa-file-contract"></i></div>
+            <div class="stat-info"><h4>Active Policies</h4>
+                <div class="stat-value" th:text="${activePolicies}">0</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon orange"><i class="fas fa-exclamation-circle"></i></div>
+            <div class="stat-info"><h4>Pending Claims</h4>
+                <div class="stat-value" th:text="${pendingClaims}">0</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green"><i class="fas fa-dollar-sign"></i></div>
+            <div class="stat-info"><h4>Total Revenue</h4>
+                <div class="stat-value" th:text="'$' + ${#numbers.formatDecimal(totalRevenue != null ? totalRevenue : 0, 1, 0)}">$0</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon red"><i class="fas fa-hand-holding-usd"></i></div>
+            <div class="stat-info"><h4>Claims Paid</h4>
+                <div class="stat-value" th:text="'$' + ${#numbers.formatDecimal(totalClaimsPaid != null ? totalClaimsPaid : 0, 1, 0)}">$0</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon purple"><i class="fas fa-chart-line"></i></div>
+            <div class="stat-info"><h4>Premium Revenue</h4>
+                <div class="stat-value" th:text="'$' + ${#numbers.formatDecimal(totalPremiumRevenue != null ? totalPremiumRevenue : 0, 1, 0)}">$0</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="report-grid">
+        <div class="card">
+            <div class="card-header"><h3><i class="fas fa-chart-pie"></i> Policy Type Distribution</h3></div>
+            <div class="card-body"><div class="chart-container"><canvas id="policyTypeChart"></canvas></div></div>
+        </div>
+        <div class="card">
+            <div class="card-header"><h3><i class="fas fa-chart-bar"></i> Claims by Status</h3></div>
+            <div class="card-body"><div class="chart-container"><canvas id="claimsStatusChart"></canvas></div></div>
+        </div>
+        <div class="card">
+            <div class="card-header"><h3><i class="fas fa-chart-line"></i> Policy Status Overview</h3></div>
+            <div class="card-body"><div class="chart-container"><canvas id="policyStatusChart"></canvas></div></div>
+        </div>
+        <div class="card">
+            <div class="card-header"><h3><i class="fas fa-dollar-sign"></i> Financial Summary</h3></div>
+            <div class="card-body"><div class="chart-container"><canvas id="financialChart"></canvas></div></div>
+        </div>
+    </div>
+
+    <!-- Policy Table -->
+    <div class="card" style="margin-top:1.5rem;">
+        <div class="card-header"><h3><i class="fas fa-table"></i> Policy Summary Report</h3></div>
+        <div class="card-body" style="padding:0">
+            <div class="table-responsive">
+                <table>
+                    <thead><tr><th>Policy #</th><th>Type</th><th>Customer</th><th>Coverage</th><th>Premium/Mo</th><th>Status</th></tr></thead>
+                    <tbody>
+                    <tr th:each="p : ${allPolicies}">
+                        <td th:text="${p.policyNumber}">-</td>
+                        <td><span class="badge badge-info" th:text="${p.policyType}">-</span></td>
+                        <td th:text="${p.customer?.name}">-</td>
+                        <td th:text="'$' + ${#numbers.formatDecimal(p.coverageAmount, 1, 0)}">-</td>
+                        <td th:text="'$' + ${#numbers.formatDecimal(p.premiumAmount, 1, 2)}">-</td>
+                        <td><span class="badge"
+                                  th:classappend="${p.status.name() == 'ACTIVE'} ? 'badge-success' : (${p.status.name() == 'CANCELLED' or p.status.name() == 'EXPIRED'} ? 'badge-danger' : 'badge-warning')"
+                                  th:text="${p.status}">-</span></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    const allPolicies = /*[[${allPolicies}]]*/ [];
+    const allClaims = /*[[${allClaims}]]*/ [];
+    const totalRevenue = /*[[${totalRevenue != null ? totalRevenue : 0}]]*/ 0;
+    const totalClaimsPaid = /*[[${totalClaimsPaid != null ? totalClaimsPaid : 0}]]*/ 0;
+
+    // Policy Type Chart
+    const typeCounts = { LIFE: 0, HEALTH: 0, VEHICLE: 0 };
+    allPolicies.forEach(p => { if (typeCounts[p.policyType] !== undefined) typeCounts[p.policyType]++; });
+    new Chart(document.getElementById('policyTypeChart'), {
+        type: 'pie',
+        data: { labels: ['Life', 'Health', 'Vehicle'], datasets: [{ data: Object.values(typeCounts), backgroundColor: ['#1e3a5f','#00a8e8','#f0a500'] }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+    });
+
+    // Claims Status Chart
+    const claimCounts = { FILED: 0, UNDER_REVIEW: 0, APPROVED: 0, REJECTED: 0, SETTLED: 0 };
+    allClaims.forEach(c => { if (claimCounts[c.status] !== undefined) claimCounts[c.status]++; });
+    new Chart(document.getElementById('claimsStatusChart'), {
+        type: 'bar',
+        data: { labels: Object.keys(claimCounts).map(k => k.replace('_', ' ')), datasets: [{ data: Object.values(claimCounts), backgroundColor: ['#17a2b8','#ffc107','#28a745','#dc3545','#1e3a5f'], label: 'Claims' }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+    });
+
+    // Policy Status Chart
+    const statusCounts = { ACTIVE: 0, PENDING: 0, EXPIRED: 0, CANCELLED: 0 };
+    allPolicies.forEach(p => { if (statusCounts[p.status] !== undefined) statusCounts[p.status]++; });
+    new Chart(document.getElementById('policyStatusChart'), {
+        type: 'doughnut',
+        data: { labels: Object.keys(statusCounts), datasets: [{ data: Object.values(statusCounts), backgroundColor: ['#28a745','#ffc107','#dc3545','#6c757d'] }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+    });
+
+    // Financial Chart
+    new Chart(document.getElementById('financialChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Total Revenue', 'Claims Paid', 'Net Profit'],
+            datasets: [{ data: [totalRevenue, totalClaimsPaid, totalRevenue - totalClaimsPaid], backgroundColor: ['#1e3a5f','#dc3545','#28a745'], label: 'Amount ($)' }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    });
+</script>
+</body>
+</html>

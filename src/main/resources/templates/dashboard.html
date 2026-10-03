@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Dashboard - InsureSystem</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<nav class="navbar">
+    <div class="nav-brand"><i class="fas fa-shield-alt"></i><span>InsureSystem</span></div>
+    <ul class="nav-links">
+        <li><a th:href="@{/dashboard}" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+        <li><a th:href="@{/customers}"><i class="fas fa-users"></i> Customers</a></li>
+        <li><a th:href="@{/policies}"><i class="fas fa-file-contract"></i> Policies</a></li>
+        <li><a th:href="@{/claims}"><i class="fas fa-hand-holding-usd"></i> Claims</a></li>
+        <li><a th:href="@{/payments}"><i class="fas fa-credit-card"></i> Payments</a></li>
+        <li><a th:href="@{/agents}"><i class="fas fa-user-tie"></i> Agents</a></li>
+        <li><a th:href="@{/documents}"><i class="fas fa-folder-open"></i> Documents</a></li>
+        <li><a th:href="@{/reports}"><i class="fas fa-chart-bar"></i> Reports</a></li>
+    </ul>
+    <div class="nav-user"><i class="fas fa-user-circle"></i><span>Admin</span></div>
+</nav>
+
+<div class="main-content">
+    <div class="page-header">
+        <div>
+            <div class="page-title">Welcome back, <span>Admin</span> 👋</div>
+            <p style="color:var(--gray);font-size:0.9rem;">Here's what's happening with your insurance portfolio today.</p>
+        </div>
+        <a th:href="@{/reports}" class="btn btn-primary"><i class="fas fa-chart-bar"></i> View Reports</a>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon blue"><i class="fas fa-users"></i></div>
+            <div class="stat-info">
+                <h4>Total Customers</h4>
+                <div class="stat-value" th:text="${totalCustomers}">0</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green"><i class="fas fa-file-contract"></i></div>
+            <div class="stat-info">
+                <h4>Active Policies</h4>
+                <div class="stat-value" th:text="${activePolicies}">0</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon orange"><i class="fas fa-exclamation-circle"></i></div>
+            <div class="stat-info">
+                <h4>Pending Claims</h4>
+                <div class="stat-value" th:text="${pendingClaims}">0</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green"><i class="fas fa-dollar-sign"></i></div>
+            <div class="stat-info">
+                <h4>Total Revenue</h4>
+                <div class="stat-value" th:text="'$' + ${#numbers.formatDecimal(totalRevenue != null ? totalRevenue : 0, 1, 0)}">$0</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon purple"><i class="fas fa-user-tie"></i></div>
+            <div class="stat-info">
+                <h4>Total Agents</h4>
+                <div class="stat-value" th:text="${totalAgents}">0</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;">
+        <div class="card">
+            <div class="card-header"><h3><i class="fas fa-chart-doughnut"></i> Policy Distribution</h3></div>
+            <div class="card-body"><div class="chart-container"><canvas id="policyChart"></canvas></div></div>
+        </div>
+        <div class="card">
+            <div class="card-header"><h3><i class="fas fa-chart-bar"></i> Claims Status</h3></div>
+            <div class="card-body"><div class="chart-container"><canvas id="claimChart"></canvas></div></div>
+        </div>
+    </div>
+
+    <!-- Tables Row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-users"></i> Recent Customers</h3>
+                <a th:href="@{/customers}" class="btn btn-sm" style="background:rgba(255,255,255,0.2);color:white;">View All</a>
+            </div>
+            <div class="card-body" style="padding:0">
+                <table>
+                    <thead><tr><th>Name</th><th>Email</th><th>Status</th></tr></thead>
+                    <tbody>
+                    <tr th:each="c : ${recentCustomers}">
+                        <td th:text="${c.name}">-</td>
+                        <td th:text="${c.email}">-</td>
+                        <td><span class="badge" th:classappend="${c.status == T(com.insurance.entity.Customer.CustomerStatus).ACTIVE} ? 'badge-success' : 'badge-warning'" th:text="${c.status}">-</span></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(recentCustomers)}">
+                        <td colspan="3" style="text-align:center;color:var(--gray);padding:2rem;">No customers yet</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-hand-holding-usd"></i> Recent Claims</h3>
+                <a th:href="@{/claims}" class="btn btn-sm" style="background:rgba(255,255,255,0.2);color:white;">View All</a>
+            </div>
+            <div class="card-body" style="padding:0">
+                <table>
+                    <thead><tr><th>Claim #</th><th>Amount</th><th>Status</th></tr></thead>
+                    <tbody>
+                    <tr th:each="cl : ${recentClaims}">
+                        <td th:text="${cl.claimNumber}">-</td>
+                        <td th:text="'$' + ${#numbers.formatDecimal(cl.claimAmount, 1, 2)}">-</td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${cl.status.name() == 'APPROVED' or cl.status.name() == 'SETTLED'} ? 'badge-success' :
+                                                  (${cl.status.name() == 'REJECTED'} ? 'badge-danger' : 'badge-warning')"
+                                  th:text="${cl.status}">-</span>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(recentClaims)}">
+                        <td colspan="3" style="text-align:center;color:var(--gray);padding:2rem;">No claims yet</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions FAB -->
+<div style="position:fixed;bottom:2rem;right:2rem;display:flex;flex-direction:column;gap:0.75rem;align-items:flex-end;">
+    <a th:href="@{/customers}" class="btn btn-primary" style="border-radius:50px;box-shadow:var(--shadow);"><i class="fas fa-user-plus"></i> Add Customer</a>
+    <a th:href="@{/policies}" class="btn btn-success" style="border-radius:50px;box-shadow:var(--shadow);"><i class="fas fa-plus"></i> Add Policy</a>
+</div>
+
+<script>
+// Policy Distribution Chart
+fetch('/api/policies')
+    .then(r => r.json())
+    .then(policies => {
+        const counts = { LIFE: 0, HEALTH: 0, VEHICLE: 0 };
+        policies.forEach(p => { if (counts[p.policyType] !== undefined) counts[p.policyType]++; });
+        new Chart(document.getElementById('policyChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Life', 'Health', 'Vehicle'],
+                datasets: [{ data: [counts.LIFE, counts.HEALTH, counts.VEHICLE],
+                    backgroundColor: ['#1e3a5f','#00a8e8','#f0a500'], borderWidth: 2 }]
+            },
+            options: { responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } } }
+        });
+    }).catch(() => {});
+
+// Claims Status Chart
+fetch('/api/claims')
+    .then(r => r.json())
+    .then(claims => {
+        const counts = { FILED: 0, UNDER_REVIEW: 0, APPROVED: 0, REJECTED: 0, SETTLED: 0 };
+        claims.forEach(c => { if (counts[c.status] !== undefined) counts[c.status]++; });
+        new Chart(document.getElementById('claimChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Filed','Under Review','Approved','Rejected','Settled'],
+                datasets: [{ label: 'Claims', data: Object.values(counts),
+                    backgroundColor: ['#17a2b8','#ffc107','#28a745','#dc3545','#1e3a5f'] }]
+            },
+            options: { responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+        });
+    }).catch(() => {});
+</script>
+</body>
+</html>

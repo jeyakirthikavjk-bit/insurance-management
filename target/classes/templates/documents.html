@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Documents - InsureSystem</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+<nav class="navbar">
+    <div class="nav-brand"><i class="fas fa-shield-alt"></i><span>InsureSystem</span></div>
+    <ul class="nav-links">
+        <li><a th:href="@{/dashboard}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+        <li><a th:href="@{/customers}"><i class="fas fa-users"></i> Customers</a></li>
+        <li><a th:href="@{/policies}"><i class="fas fa-file-contract"></i> Policies</a></li>
+        <li><a th:href="@{/claims}"><i class="fas fa-hand-holding-usd"></i> Claims</a></li>
+        <li><a th:href="@{/payments}"><i class="fas fa-credit-card"></i> Payments</a></li>
+        <li><a th:href="@{/agents}"><i class="fas fa-user-tie"></i> Agents</a></li>
+        <li><a th:href="@{/documents}" class="active"><i class="fas fa-folder-open"></i> Documents</a></li>
+        <li><a th:href="@{/reports}"><i class="fas fa-chart-bar"></i> Reports</a></li>
+    </ul>
+    <div class="nav-user"><i class="fas fa-user-circle"></i><span>Admin</span></div>
+</nav>
+<div id="alertContainer"></div>
+
+<div class="main-content">
+    <div class="page-header">
+        <div class="page-title"><i class="fas fa-folder-open" style="color:var(--secondary)"></i> Document <span>Management</span></div>
+        <button class="btn btn-primary" onclick="openModal('uploadDocModal')"><i class="fas fa-upload"></i> Upload Document</button>
+    </div>
+
+    <!-- Upload Area -->
+    <div class="card" style="margin-bottom:1.5rem;">
+        <div class="card-body">
+            <div class="upload-area" onclick="openModal('uploadDocModal')" id="dropZone">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <h3>Drag & Drop or Click to Upload</h3>
+                <p style="color:var(--gray)">Supports PDF, JPG, PNG, DOC files up to 10MB</p>
+                <button class="btn btn-primary" style="margin-top:1rem;" onclick="event.stopPropagation();openModal('uploadDocModal')">
+                    <i class="fas fa-plus"></i> Choose File
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><h3><i class="fas fa-list"></i> All Documents (<span th:text="${#lists.size(documents)}">0</span>)</h3></div>
+        <div class="card-body" style="padding:0">
+            <div class="table-responsive">
+                <table>
+                    <thead><tr><th>Name</th><th>File</th><th>Type</th><th>Customer</th><th>Policy</th><th>Size</th><th>Uploaded By</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody>
+                    <tr th:each="d : ${documents}">
+                        <td><strong th:text="${d.name}">-</strong></td>
+                        <td>
+                            <i class="fas"
+                               th:classappend="${d.fileType != null and d.fileType.contains('pdf')} ? 'fa-file-pdf' :
+                                               (${d.fileType != null and d.fileType.contains('image')} ? 'fa-file-image' : 'fa-file')"
+                               style="color:var(--secondary)"></i>
+                            <span th:text="${d.fileName}">-</span>
+                        </td>
+                        <td><span class="badge badge-info" th:text="${d.documentType}">-</span></td>
+                        <td th:text="${d.customer?.name ?: '-'}">-</td>
+                        <td th:text="${d.policy?.policyNumber ?: '-'}">-</td>
+                        <td th:text="${d.fileSize != null ? #numbers.formatDecimal(d.fileSize / 1024.0, 1, 1) + ' KB' : '-'}">-</td>
+                        <td th:text="${d.uploadedBy}">-</td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${d.status.name() == 'ACTIVE'} ? 'badge-success' : 'badge-danger'"
+                                  th:text="${d.status}">-</span>
+                        </td>
+                        <td>
+                            <a th:href="@{'/api/documents/' + ${d.id} + '/download'}" class="btn btn-sm btn-success"><i class="fas fa-download"></i></a>
+                            <button class="btn btn-sm btn-danger" th:onclick="'deleteDocument(' + ${d.id} + ')'"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(documents)}">
+                        <td colspan="9"><div class="empty-state"><i class="fas fa-folder-open"></i><h3>No documents yet</h3><p>Upload your first document above.</p></div></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Document Modal -->
+<div class="modal-overlay" id="uploadDocModal">
+    <div class="modal">
+        <div class="modal-header"><h3><i class="fas fa-upload"></i> Upload Document</h3><button class="modal-close" onclick="closeModal('uploadDocModal')"><i class="fas fa-times"></i></button></div>
+        <div class="modal-body">
+            <div class="form-grid">
+                <div class="form-group" style="grid-column:1/-1">
+                    <label>File *</label>
+                    <input type="file" id="doc_file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" required
+                           style="padding:8px;border:1.5px solid var(--border);border-radius:6px;width:100%;"/>
+                </div>
+                <div class="form-group"><label>Document Name</label><input type="text" id="doc_name" placeholder="Identity Proof"/></div>
+                <div class="form-group"><label>Document Type</label>
+                    <select id="doc_type">
+                        <option>IDENTITY_PROOF</option><option>ADDRESS_PROOF</option><option>POLICY_DOCUMENT</option>
+                        <option>CLAIM_FORM</option><option>MEDICAL_REPORT</option><option>VEHICLE_REGISTRATION</option>
+                        <option>INCOME_PROOF</option><option>OTHER</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Customer</label>
+                    <select id="doc_customer"><option value="">None</option>
+                        <option th:each="c : ${customers}" th:value="${c.id}" th:text="${c.name}">-</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Policy</label>
+                    <select id="doc_policy"><option value="">None</option>
+                        <option th:each="p : ${policies}" th:value="${p.id}" th:text="${p.policyNumber}">-</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Uploaded By</label><input type="text" id="doc_uploadedBy" value="Admin"/></div>
+                <div class="form-group" style="grid-column:1/-1"><label>Description</label>
+                    <textarea id="doc_desc" placeholder="Brief description of the document..."></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('uploadDocModal')">Cancel</button>
+            <button class="btn btn-primary" onclick="uploadDocument()"><i class="fas fa-upload"></i> Upload</button>
+        </div>
+    </div>
+</div>
+
+<th:block th:insert="~{fragments/scripts :: scripts}"></th:block>
+<script>
+async function uploadDocument() {
+    const fileInput = document.getElementById('doc_file');
+    if (!fileInput.files.length) { showAlert('Please select a file', 'danger'); return; }
+
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    formData.append('name', document.getElementById('doc_name').value);
+    formData.append('documentType', document.getElementById('doc_type').value);
+    formData.append('uploadedBy', document.getElementById('doc_uploadedBy').value);
+    formData.append('description', document.getElementById('doc_desc').value);
+
+    const customerId = document.getElementById('doc_customer').value;
+    const policyId = document.getElementById('doc_policy').value;
+    if (customerId) formData.append('customerId', customerId);
+    if (policyId) formData.append('policyId', policyId);
+
+    try {
+        const res = await fetch('/api/documents/upload', { method: 'POST', body: formData });
+        if (res.ok) {
+            showAlert('Document uploaded successfully!');
+            closeModal('uploadDocModal');
+            setTimeout(() => location.reload(), 800);
+        } else {
+            const json = await res.json();
+            showAlert(json.message || 'Upload failed', 'danger');
+        }
+    } catch (e) { showAlert('Upload error: ' + e.message, 'danger'); }
+}
+function deleteDocument(id) {
+    if (confirm('Delete this document?')) {
+        apiDelete('/api/documents/' + id, 'Document deleted!', () => location.reload());
+    }
+}
+// Drag and drop
+const dropZone = document.getElementById('dropZone');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    const files = e.dataTransfer.files;
+    if (files.length) {
+        document.getElementById('doc_file').files = files;
+        openModal('uploadDocModal');
+    }
+});
+</script>
+</body>
+</html>

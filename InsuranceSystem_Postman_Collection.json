@@ -1,0 +1,280 @@
+{
+  "info": {
+    "name": "Insurance Policy Management System API",
+    "description": "Complete API collection for testing the Insurance Management System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Customers",
+      "item": [
+        {
+          "name": "Get All Customers",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/customers" }
+        },
+        {
+          "name": "Get Customer by ID",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/customers/1" }
+        },
+        {
+          "name": "Create Customer",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/customers",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Alice Brown\",\n  \"email\": \"alice.brown@email.com\",\n  \"phone\": \"+1-555-9999\",\n  \"address\": \"500 Cherry Lane\",\n  \"city\": \"Boston\",\n  \"state\": \"MA\",\n  \"zipCode\": \"02101\",\n  \"occupation\": \"Doctor\",\n  \"annualIncome\": 180000,\n  \"gender\": \"FEMALE\",\n  \"dateOfBirth\": \"1982-04-20\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Customer",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/customers/1",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Smith Updated\",\n  \"phone\": \"+1-555-1099\",\n  \"address\": \"456 New Street\",\n  \"city\": \"New York\",\n  \"status\": \"ACTIVE\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Customer",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/api/customers/1" }
+        },
+        {
+          "name": "Search Customers",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/customers/search?keyword=john" }
+        },
+        {
+          "name": "Get Customers by Status",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/customers/status/ACTIVE" }
+        }
+      ]
+    },
+    {
+      "name": "Policies",
+      "item": [
+        {
+          "name": "Get All Policies",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/policies" }
+        },
+        {
+          "name": "Get Policy by ID",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/policies/1" }
+        },
+        {
+          "name": "Create Life Policy",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/policies/life?customerId=1&agentId=1",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Whole Life Plan\",\n  \"coverageAmount\": 300000,\n  \"sumAssured\": 300000,\n  \"policyTermYears\": 25,\n  \"startDate\": \"2024-06-01\",\n  \"endDate\": \"2049-06-01\",\n  \"beneficiaryName\": \"Tom Doe\",\n  \"beneficiaryRelation\": \"Son\",\n  \"paymentFrequency\": \"MONTHLY\",\n  \"smoker\": false,\n  \"riderCriticalIllness\": true,\n  \"riderAccidentalDeath\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Create Health Policy",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/policies/health?customerId=1",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Individual Health Plan\",\n  \"coverageAmount\": 50000,\n  \"hospitalDailyBenefit\": 300,\n  \"deductibleAmount\": 500,\n  \"copayPercentage\": 15,\n  \"startDate\": \"2024-06-01\",\n  \"endDate\": \"2025-06-01\",\n  \"coversDental\": true,\n  \"coversVision\": false,\n  \"coversMaternity\": false,\n  \"familyFloater\": false,\n  \"familyMembersCovered\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "Create Vehicle Policy",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/policies/vehicle?customerId=2",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Auto Shield Plus\",\n  \"coverageAmount\": 20000,\n  \"vehicleMake\": \"Honda\",\n  \"vehicleModel\": \"Civic\",\n  \"vehicleYear\": 2021,\n  \"vehicleNumber\": \"IL-2021-HN\",\n  \"vehicleValue\": 22000,\n  \"coverageType\": \"COMPREHENSIVE\",\n  \"deductibleAmount\": 500,\n  \"startDate\": \"2024-06-01\",\n  \"endDate\": \"2025-06-01\",\n  \"roadsideAssistance\": true,\n  \"antiTheftDevice\": false\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Policy Status",
+          "request": { "method": "PATCH", "url": "{{baseUrl}}/api/policies/1/status?status=SUSPENDED" }
+        },
+        {
+          "name": "Search Policies",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/policies/search?keyword=LIF" }
+        },
+        {
+          "name": "Get Policies by Customer",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/policies/customer/1" }
+        },
+        {
+          "name": "Get Policy Stats",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/policies/stats" }
+        }
+      ]
+    },
+    {
+      "name": "Claims",
+      "item": [
+        {
+          "name": "Get All Claims",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/claims" }
+        },
+        {
+          "name": "File a Claim",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/claims/file?policyId=1",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Surgery Claim\",\n  \"description\": \"Emergency heart surgery at Metro Hospital.\",\n  \"claimAmount\": 25000,\n  \"incidentDate\": \"2024-05-01\",\n  \"incidentLocation\": \"Metro General Hospital, NY\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Approve Claim",
+          "request": { "method": "PATCH", "url": "{{baseUrl}}/api/claims/1/approve?approvedAmount=7800" }
+        },
+        {
+          "name": "Reject Claim",
+          "request": { "method": "PATCH", "url": "{{baseUrl}}/api/claims/2/reject?reason=Insufficient%20documentation%20provided" }
+        },
+        {
+          "name": "Settle Claim",
+          "request": { "method": "PATCH", "url": "{{baseUrl}}/api/claims/1/status?status=SETTLED" }
+        },
+        {
+          "name": "Get Claims by Policy",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/claims/policy/1" }
+        },
+        {
+          "name": "Get Claims by Status",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/claims/status/UNDER_REVIEW" }
+        },
+        {
+          "name": "Get Claim Stats",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/claims/stats" }
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "item": [
+        {
+          "name": "Get All Payments",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/payments" }
+        },
+        {
+          "name": "Make Payment",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/payments?policyId=1",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 850.00,\n  \"paymentMethod\": \"CREDIT_CARD\",\n  \"bankName\": \"Wells Fargo\",\n  \"referenceNumber\": \"REF-2024-100\",\n  \"remarks\": \"May premium payment\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Payments by Policy",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/payments/policy/1" }
+        },
+        {
+          "name": "Get Payment Stats",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/payments/stats" }
+        }
+      ]
+    },
+    {
+      "name": "Agents",
+      "item": [
+        {
+          "name": "Get All Agents",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/agents" }
+        },
+        {
+          "name": "Create Agent",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/agents",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Diana Prince\",\n  \"email\": \"diana.prince@insure.com\",\n  \"phone\": \"+1-555-0303\",\n  \"licenseNumber\": \"LIC-2024-003\",\n  \"specialization\": \"Commercial Insurance\",\n  \"commissionRate\": 7.0,\n  \"city\": \"Miami\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Agent",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/agents/1",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sarah Johnson\",\n  \"phone\": \"+1-555-0299\",\n  \"specialization\": \"Life, Health & Retirement\",\n  \"commissionRate\": 7.5,\n  \"status\": \"ACTIVE\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Search Agents",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/agents/search?keyword=sarah" }
+        },
+        {
+          "name": "Delete Agent",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/api/agents/1" }
+        }
+      ]
+    },
+    {
+      "name": "Documents",
+      "item": [
+        {
+          "name": "Get All Documents",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/documents" }
+        },
+        {
+          "name": "Upload Document",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/documents/upload",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": "/path/to/document.pdf" },
+                { "key": "name", "value": "Passport Copy", "type": "text" },
+                { "key": "documentType", "value": "IDENTITY_PROOF", "type": "text" },
+                { "key": "customerId", "value": "1", "type": "text" },
+                { "key": "uploadedBy", "value": "Admin", "type": "text" },
+                { "key": "description", "value": "Customer passport scan", "type": "text" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Download Document",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/documents/1/download" }
+        },
+        {
+          "name": "Get Documents by Customer",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/documents/customer/1" }
+        },
+        {
+          "name": "Delete Document",
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/api/documents/1" }
+        }
+      ]
+    }
+  ]
+}

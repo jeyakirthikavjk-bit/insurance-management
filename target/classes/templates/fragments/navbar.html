@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Insurance Policy Management System</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+<nav class="navbar">
+    <div class="nav-brand">
+        <i class="fas fa-shield-alt"></i>
+        <span>InsureSystem</span>
+    </div>
+    <ul class="nav-links">
+        <li><a th:href="@{/dashboard}" th:classappend="${#httpServletRequest.requestURI == '/dashboard'} ? 'active'"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+        <li><a th:href="@{/customers}" th:classappend="${#httpServletRequest.requestURI == '/customers'} ? 'active'"><i class="fas fa-users"></i> Customers</a></li>
+        <li><a th:href="@{/policies}" th:classappend="${#httpServletRequest.requestURI == '/policies'} ? 'active'"><i class="fas fa-file-contract"></i> Policies</a></li>
+        <li><a th:href="@{/claims}" th:classappend="${#httpServletRequest.requestURI == '/claims'} ? 'active'"><i class="fas fa-hand-holding-usd"></i> Claims</a></li>
+        <li><a th:href="@{/payments}" th:classappend="${#httpServletRequest.requestURI == '/payments'} ? 'active'"><i class="fas fa-credit-card"></i> Payments</a></li>
+        <li><a th:href="@{/agents}" th:classappend="${#httpServletRequest.requestURI == '/agents'} ? 'active'"><i class="fas fa-user-tie"></i> Agents</a></li>
+        <li><a th:href="@{/documents}" th:classappend="${#httpServletRequest.requestURI == '/documents'} ? 'active'"><i class="fas fa-folder-open"></i> Documents</a></li>
+        <li><a th:href="@{/reports}" th:classappend="${#httpServletRequest.requestURI == '/reports'} ? 'active'"><i class="fas fa-chart-bar"></i> Reports</a></li>
+    </ul>
+    <div class="nav-user">
+        <i class="fas fa-user-circle"></i>
+        <span>Admin</span>
+    </div>
+</nav>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Payments - InsureSystem</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+<nav class="navbar">
+    <div class="nav-brand"><i class="fas fa-shield-alt"></i><span>InsureSystem</span></div>
+    <ul class="nav-links">
+        <li><a th:href="@{/dashboard}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+        <li><a th:href="@{/customers}"><i class="fas fa-users"></i> Customers</a></li>
+        <li><a th:href="@{/policies}"><i class="fas fa-file-contract"></i> Policies</a></li>
+        <li><a th:href="@{/claims}"><i class="fas fa-hand-holding-usd"></i> Claims</a></li>
+        <li><a th:href="@{/payments}" class="active"><i class="fas fa-credit-card"></i> Payments</a></li>
+        <li><a th:href="@{/agents}"><i class="fas fa-user-tie"></i> Agents</a></li>
+        <li><a th:href="@{/documents}"><i class="fas fa-folder-open"></i> Documents</a></li>
+        <li><a th:href="@{/reports}"><i class="fas fa-chart-bar"></i> Reports</a></li>
+    </ul>
+    <div class="nav-user"><i class="fas fa-user-circle"></i><span>Admin</span></div>
+</nav>
+<div id="alertContainer"></div>
+
+<div class="main-content">
+    <div class="page-header">
+        <div class="page-title"><i class="fas fa-credit-card" style="color:var(--secondary)"></i> Payment <span>Management</span></div>
+        <button class="btn btn-primary" onclick="openModal('makePaymentModal')"><i class="fas fa-plus"></i> Record Payment</button>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><h3><i class="fas fa-list"></i> All Payments (<span th:text="${#lists.size(payments)}">0</span>)</h3></div>
+        <div class="card-body" style="padding:0">
+            <div class="table-responsive">
+                <table>
+                    <thead><tr><th>Transaction ID</th><th>Description</th><th>Customer</th><th>Policy</th><th>Amount</th><th>Method</th><th>Date</th><th>Status</th></tr></thead>
+                    <tbody>
+                    <tr th:each="p : ${payments}">
+                        <td><code th:text="${p.transactionId}">-</code></td>
+                        <td th:text="${p.name}">-</td>
+                        <td th:text="${p.customer?.name}">-</td>
+                        <td th:text="${p.policy?.policyNumber}">-</td>
+                        <td><strong th:text="'$' + ${#numbers.formatDecimal(p.amount, 1, 2)}">-</strong></td>
+                        <td th:text="${p.paymentMethod}">-</td>
+                        <td th:text="${p.paymentDate}">-</td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${p.status.name() == 'COMPLETED'} ? 'badge-success' :
+                                                  (${p.status.name() == 'FAILED'} ? 'badge-danger' : 'badge-warning')"
+                                  th:text="${p.status}">-</span>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(payments)}">
+                        <td colspan="8"><div class="empty-state"><i class="fas fa-credit-card"></i><h3>No payments yet</h3><p>Record your first payment above.</p></div></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Make Payment Modal -->
+<div class="modal-overlay" id="makePaymentModal">
+    <div class="modal">
+        <div class="modal-header"><h3><i class="fas fa-credit-card"></i> Record Payment</h3><button class="modal-close" onclick="closeModal('makePaymentModal')"><i class="fas fa-times"></i></button></div>
+        <div class="modal-body">
+            <div class="form-grid">
+                <div class="form-group"><label>Policy *</label>
+                    <select id="pay_policy"><option value="">Select Policy</option>
+                        <option th:each="p : ${policies}" th:value="${p.id}" th:text="${p.policyNumber + ' - ' + p.customer?.name + ' ($' + #numbers.formatDecimal(p.premiumAmount, 1, 2) + ')'}">-</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Amount ($) *</label><input type="number" id="pay_amount" placeholder="500.00" step="0.01"/></div>
+                <div class="form-group"><label>Payment Method *</label>
+                    <select id="pay_method">
+                        <option>CREDIT_CARD</option><option>DEBIT_CARD</option><option>BANK_TRANSFER</option>
+                        <option>CASH</option><option>ONLINE</option><option>CHECK</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Bank Name</label><input type="text" id="pay_bank" placeholder="Chase Bank"/></div>
+                <div class="form-group"><label>Reference Number</label><input type="text" id="pay_ref" placeholder="REF-001"/></div>
+                <div class="form-group"><label>Remarks</label><input type="text" id="pay_remarks" placeholder="Monthly premium payment"/></div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('makePaymentModal')">Cancel</button>
+            <button class="btn btn-primary" onclick="makePayment()"><i class="fas fa-check"></i> Record Payment</button>
+        </div>
+    </div>
+</div>
+
+<th:block th:insert="~{fragments/scripts :: scripts}"></th:block>
+<script>
+function makePayment() {
+    const policyId = document.getElementById('pay_policy').value;
+    if (!policyId) { showAlert('Please select a policy', 'danger'); return; }
+    const payload = {
+        amount: parseFloat(document.getElementById('pay_amount').value),
+        paymentMethod: document.getElementById('pay_method').value,
+        bankName: document.getElementById('pay_bank').value,
+        referenceNumber: document.getElementById('pay_ref').value,
+        remarks: document.getElementById('pay_remarks').value
+    };
+    apiPost(`/api/payments?policyId=${policyId}`, payload, 'Payment recorded!', () => location.reload());
+}
+</script>
+</body>
+</html>

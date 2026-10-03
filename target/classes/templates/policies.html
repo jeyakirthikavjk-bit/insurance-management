@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Policies - InsureSystem</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+<nav class="navbar">
+    <div class="nav-brand"><i class="fas fa-shield-alt"></i><span>InsureSystem</span></div>
+    <ul class="nav-links">
+        <li><a th:href="@{/dashboard}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+        <li><a th:href="@{/customers}"><i class="fas fa-users"></i> Customers</a></li>
+        <li><a th:href="@{/policies}" class="active"><i class="fas fa-file-contract"></i> Policies</a></li>
+        <li><a th:href="@{/claims}"><i class="fas fa-hand-holding-usd"></i> Claims</a></li>
+        <li><a th:href="@{/payments}"><i class="fas fa-credit-card"></i> Payments</a></li>
+        <li><a th:href="@{/agents}"><i class="fas fa-user-tie"></i> Agents</a></li>
+        <li><a th:href="@{/documents}"><i class="fas fa-folder-open"></i> Documents</a></li>
+        <li><a th:href="@{/reports}"><i class="fas fa-chart-bar"></i> Reports</a></li>
+    </ul>
+    <div class="nav-user"><i class="fas fa-user-circle"></i><span>Admin</span></div>
+</nav>
+<div id="alertContainer"></div>
+
+<div class="main-content">
+    <div class="page-header">
+        <div class="page-title"><i class="fas fa-file-contract" style="color:var(--secondary)"></i> Policy <span>Management</span></div>
+        <div style="display:flex;gap:0.5rem;">
+            <button class="btn btn-primary" onclick="openModal('addLifeModal')"><i class="fas fa-heartbeat"></i> Life Policy</button>
+            <button class="btn btn-success" onclick="openModal('addHealthModal')"><i class="fas fa-medkit"></i> Health Policy</button>
+            <button class="btn btn-warning" onclick="openModal('addVehicleModal')"><i class="fas fa-car"></i> Vehicle Policy</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-list"></i> All Policies (<span th:text="${#lists.size(policies)}">0</span>)</h3>
+            <form th:action="@{/policies}" method="get" style="display:flex;gap:0.5rem;">
+                <input type="text" name="search" th:value="${search}" placeholder="Search policy number, name..."
+                       style="padding:6px 12px;border:1px solid rgba(255,255,255,0.4);border-radius:6px;background:rgba(255,255,255,0.15);color:white;"/>
+                <button type="submit" class="btn btn-sm" style="background:rgba(255,255,255,0.2);color:white;"><i class="fas fa-search"></i></button>
+            </form>
+        </div>
+        <div class="card-body" style="padding:0">
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr><th>Policy #</th><th>Type</th><th>Customer</th><th>Coverage</th><th>Premium</th><th>Start</th><th>End</th><th>Status</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="p : ${policies}">
+                        <td><strong th:text="${p.policyNumber}">-</strong></td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${p.policyTypeLabel == 'LIFE'} ? 'badge-primary' : (${p.policyTypeLabel == 'HEALTH'} ? 'badge-success' : 'badge-warning')"
+                                  th:text="${p.policyTypeLabel}">-</span>
+                        </td>
+                        <td th:text="${p.customer?.name}">-</td>
+                        <td th:text="'$' + ${#numbers.formatDecimal(p.coverageAmount, 1, 0)}">-</td>
+                        <td th:text="'$' + ${#numbers.formatDecimal(p.premiumAmount, 1, 2)}">-</td>
+                        <td th:text="${p.startDate}">-</td>
+                        <td th:text="${p.endDate}">-</td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${p.status.name() == 'ACTIVE'} ? 'badge-success' :
+                                                  (${p.status.name() == 'EXPIRED' or p.status.name() == 'CANCELLED'} ? 'badge-danger' : 'badge-warning')"
+                                  th:text="${p.status}">-</span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-danger" th:onclick="'cancelPolicy(' + ${p.id} + ')'"><i class="fas fa-ban"></i></button>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(policies)}">
+                        <td colspan="9"><div class="empty-state"><i class="fas fa-file-contract"></i><h3>No policies found</h3><p>Create your first policy above.</p></div></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Life Policy Modal -->
+<div class="modal-overlay" id="addLifeModal">
+    <div class="modal">
+        <div class="modal-header"><h3><i class="fas fa-heartbeat"></i> Create Life Policy</h3><button class="modal-close" onclick="closeModal('addLifeModal')"><i class="fas fa-times"></i></button></div>
+        <div class="modal-body">
+            <div class="form-grid">
+                <div class="form-group"><label>Policy Name *</label><input type="text" id="lp_name" placeholder="Term Life Plan"/></div>
+                <div class="form-group"><label>Customer *</label>
+                    <select id="lp_customer">
+                        <option value="">Select Customer</option>
+                        <option th:each="c : ${customers}" th:value="${c.id}" th:text="${c.name}">-</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Agent</label>
+                    <select id="lp_agent"><option value="">None</option>
+                        <option th:each="a : ${agents}" th:value="${a.id}" th:text="${a.name}">-</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Sum Assured ($) *</label><input type="number" id="lp_sumAssured" placeholder="500000"/></div>
+                <div class="form-group"><label>Coverage Amount ($) *</label><input type="number" id="lp_coverage" placeholder="500000"/></div>
+                <div class="form-group"><label>Policy Term (Years)</label><input type="number" id="lp_term" placeholder="20"/></div>
+                <div class="form-group"><label>Start Date *</label><input type="date" id="lp_start"/></div>
+                <div class="form-group"><label>End Date *</label><input type="date" id="lp_end"/></div>
+                <div class="form-group"><label>Beneficiary Name</label><input type="text" id="lp_beneficiary" placeholder="Jane Doe"/></div>
+                <div class="form-group"><label>Beneficiary Relation</label><input type="text" id="lp_relation" placeholder="Spouse"/></div>
+                <div class="form-group"><label>Payment Frequency</label>
+                    <select id="lp_freq"><option>MONTHLY</option><option>QUARTERLY</option><option>ANNUALLY</option></select>
+                </div>
+                <div class="form-group"><label>Smoker?</label>
+                    <select id="lp_smoker"><option value="false">No</option><option value="true">Yes</option></select>
+                </div>
+                <div class="form-group"><label>Critical Illness Rider</label>
+                    <select id="lp_ci"><option value="false">No</option><option value="true">Yes</option></select>
+                </div>
+                <div class="form-group"><label>Accidental Death Rider</label>
+                    <select id="lp_ad"><option value="false">No</option><option value="true">Yes</option></select>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('addLifeModal')">Cancel</button>
+            <button class="btn btn-primary" onclick="addLifePolicy()"><i class="fas fa-save"></i> Create Policy</button>
+        </div>
+    </div>
+</div>
+
+<!-- Add Health Policy Modal -->
+<div class="modal-overlay" id="addHealthModal">
+    <div class="modal">
+        <div class="modal-header"><h3><i class="fas fa-medkit"></i> Create Health Policy</h3><button class="modal-close" onclick="closeModal('addHealthModal')"><i class="fas fa-times"></i></button></div>
+        <div class="modal-body">
+            <div class="form-grid">
+                <div class="form-group"><label>Policy Name *</label><input type="text" id="hp_name" placeholder="Comprehensive Health Plan"/></div>
+                <div class="form-group"><label>Customer *</label>
+                    <select id="hp_customer"><option value="">Select Customer</option>
+                        <option th:each="c : ${customers}" th:value="${c.id}" th:text="${c.name}">-</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Coverage Amount ($) *</label><input type="number" id="hp_coverage" placeholder="100000"/></div>
+                <div class="form-group"><label>Daily Hospital Benefit ($)</label><input type="number" id="hp_daily" placeholder="500"/></div>
+                <div class="form-group"><label>Deductible ($)</label><input type="number" id="hp_deductible" placeholder="1000"/></div>
+                <div class="form-group"><label>Copay (%)</label><input type="number" id="hp_copay" placeholder="20"/></div>
+                <div class="form-group"><label>Start Date *</label><input type="date" id="hp_start"/></div>
+                <div class="form-group"><label>End Date *</label><input type="date" id="hp_end"/></div>
+                <div class="form-group"><label>Family Floater?</label>
+                    <select id="hp_family"><option value="false">No</option><option value="true">Yes</option></select>
+                </div>
+                <div class="form-group"><label>Members Covered</label><input type="number" id="hp_members" value="1" min="1"/></div>
+                <div class="form-group"><label>Covers Dental?</label>
+                    <select id="hp_dental"><option value="false">No</option><option value="true">Yes</option></select>
+                </div>
+                <div class="form-group"><label>Covers Vision?</label>
+                    <select id="hp_vision"><option value="false">No</option><option value="true">Yes</option></select>
+                </div>
+                <div class="form-group"><label>Covers Maternity?</label>
+                    <select id="hp_maternity"><option value="false">No</option><option value="true">Yes</option></select>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('addHealthModal')">Cancel</button>
+            <button class="btn btn-success" onclick="addHealthPolicy()"><i class="fas fa-save"></i> Create Policy</button>
+        </div>
+    </div>
+</div>
+
+<!-- Add Vehicle Policy Modal -->
+<div class="modal-overlay" id="addVehicleModal">
+    <div class="modal">
+        <div class="modal-header"><h3><i class="fas fa-car"></i> Create Vehicle Policy</h3><button class="modal-close" onclick="closeModal('addVehicleModal')"><i class="fas fa-times"></i></button></div>
+        <div class="modal-body">
+            <div class="form-grid">
+                <div class="form-group"><label>Policy Name *</label><input type="text" id="vp_name" placeholder="Auto Insurance Plan"/></div>
+                <div class="form-group"><label>Customer *</label>
+                    <select id="vp_customer"><option value="">Select Customer</option>
+                        <option th:each="c : ${customers}" th:value="${c.id}" th:text="${c.name}">-</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Vehicle Make</label><input type="text" id="vp_make" placeholder="Toyota"/></div>
+                <div class="form-group"><label>Vehicle Model</label><input type="text" id="vp_model" placeholder="Camry"/></div>
+                <div class="form-group"><label>Vehicle Year</label><input type="number" id="vp_year" placeholder="2022"/></div>
+                <div class="form-group"><label>Registration Number *</label><input type="text" id="vp_reg" placeholder="ABC-1234"/></div>
+                <div class="form-group"><label>Vehicle Value ($) *</label><input type="number" id="vp_value" placeholder="25000"/></div>
+                <div class="form-group"><label>Coverage Type</label>
+                    <select id="vp_covType"><option>COMPREHENSIVE</option><option>THIRD_PARTY</option><option>COLLISION</option><option>LIABILITY</option></select>
+                </div>
+                <div class="form-group"><label>Coverage Amount ($) *</label><input type="number" id="vp_coverage" placeholder="25000"/></div>
+                <div class="form-group"><label>Deductible ($)</label><input type="number" id="vp_deductible" placeholder="500"/></div>
+                <div class="form-group"><label>Start Date *</label><input type="date" id="vp_start"/></div>
+                <div class="form-group"><label>End Date *</label><input type="date" id="vp_end"/></div>
+                <div class="form-group"><label>Roadside Assistance?</label>
+                    <select id="vp_roadside"><option value="false">No</option><option value="true">Yes</option></select>
+                </div>
+                <div class="form-group"><label>Anti-Theft Device?</label>
+                    <select id="vp_antitheft"><option value="false">No</option><option value="true">Yes</option></select>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('addVehicleModal')">Cancel</button>
+            <button class="btn btn-warning" onclick="addVehiclePolicy()"><i class="fas fa-save"></i> Create Policy</button>
+        </div>
+    </div>
+</div>
+
+<th:block th:insert="~{fragments/scripts :: scripts}"></th:block>
+<script>
+function addLifePolicy() {
+    const customerId = document.getElementById('lp_customer').value;
+    const agentId = document.getElementById('lp_agent').value;
+    if (!customerId) { showAlert('Please select a customer', 'danger'); return; }
+    const payload = {
+        name: document.getElementById('lp_name').value,
+        coverageAmount: parseFloat(document.getElementById('lp_coverage').value),
+        sumAssured: parseFloat(document.getElementById('lp_sumAssured').value),
+        policyTermYears: parseInt(document.getElementById('lp_term').value),
+        startDate: document.getElementById('lp_start').value,
+        endDate: document.getElementById('lp_end').value,
+        beneficiaryName: document.getElementById('lp_beneficiary').value,
+        beneficiaryRelation: document.getElementById('lp_relation').value,
+        paymentFrequency: document.getElementById('lp_freq').value,
+        smoker: document.getElementById('lp_smoker').value === 'true',
+        riderCriticalIllness: document.getElementById('lp_ci').value === 'true',
+        riderAccidentalDeath: document.getElementById('lp_ad').value === 'true'
+    };
+    let url = `/api/policies/life?customerId=${customerId}`;
+    if (agentId) url += `&agentId=${agentId}`;
+    apiPost(url, payload, 'Life policy created!', () => location.reload());
+}
+function addHealthPolicy() {
+    const customerId = document.getElementById('hp_customer').value;
+    if (!customerId) { showAlert('Please select a customer', 'danger'); return; }
+    const payload = {
+        name: document.getElementById('hp_name').value,
+        coverageAmount: parseFloat(document.getElementById('hp_coverage').value),
+        hospitalDailyBenefit: parseFloat(document.getElementById('hp_daily').value),
+        deductibleAmount: parseFloat(document.getElementById('hp_deductible').value),
+        copayPercentage: parseFloat(document.getElementById('hp_copay').value),
+        startDate: document.getElementById('hp_start').value,
+        endDate: document.getElementById('hp_end').value,
+        familyFloater: document.getElementById('hp_family').value === 'true',
+        familyMembersCovered: parseInt(document.getElementById('hp_members').value),
+        coversDental: document.getElementById('hp_dental').value === 'true',
+        coversVision: document.getElementById('hp_vision').value === 'true',
+        coversMaternity: document.getElementById('hp_maternity').value === 'true'
+    };
+    apiPost(`/api/policies/health?customerId=${customerId}`, payload, 'Health policy created!', () => location.reload());
+}
+function addVehiclePolicy() {
+    const customerId = document.getElementById('vp_customer').value;
+    if (!customerId) { showAlert('Please select a customer', 'danger'); return; }
+    const payload = {
+        name: document.getElementById('vp_name').value,
+        coverageAmount: parseFloat(document.getElementById('vp_coverage').value),
+        vehicleMake: document.getElementById('vp_make').value,
+        vehicleModel: document.getElementById('vp_model').value,
+        vehicleYear: parseInt(document.getElementById('vp_year').value),
+        vehicleNumber: document.getElementById('vp_reg').value,
+        vehicleValue: parseFloat(document.getElementById('vp_value').value),
+        coverageType: document.getElementById('vp_covType').value,
+        deductibleAmount: parseFloat(document.getElementById('vp_deductible').value),
+        startDate: document.getElementById('vp_start').value,
+        endDate: document.getElementById('vp_end').value,
+        roadsideAssistance: document.getElementById('vp_roadside').value === 'true',
+        antiTheftDevice: document.getElementById('vp_antitheft').value === 'true'
+    };
+    apiPost(`/api/policies/vehicle?customerId=${customerId}`, payload, 'Vehicle policy created!', () => location.reload());
+}
+function cancelPolicy(id) {
+    if (confirm('Cancel this policy?')) {
+        apiPatch(`/api/policies/${id}/status?status=CANCELLED`, 'Policy cancelled!', () => location.reload());
+    }
+}
+</script>
+</body>
+</html>
